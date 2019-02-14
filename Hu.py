@@ -1,60 +1,42 @@
-import cv2
-import numpy as np
-import sys
+# Code licensed to Big Vision LLC
+# Link: https://github.com/spmallick/learnopencv/tree/master/HuMoments
+import cv2, sys, os
+from math import copysign, log10
 
-# Check arguments
-# Read sample.png if no arguments given
-if(len(sys.argv) < 2):
-	filename = "input_image.png"
-else:
-	filename = sys.argv[1]
+if __name__ == "__main__":
+    showLogTransformedHuMoments = True
 
-#print(filename)
+    for i in range(1,len(sys.argv)):
 
-def translation(img):
-    # translation of the image
-    num_rows, num_cols = img.shape[:2]
+        # Obtain filename from command line argument
+        filename = sys.argv[i]
 
-    # change last column (5 and 10) values for experiments
+        # Read image
+        im = cv2.imread(filename,cv2.IMREAD_GRAYSCALE)
 
-    trans_matrix = np.float32([ [1, 0, 30], [0, 1, 40]])
-    img_translation = cv2.warpAffine(img, trans_matrix, (num_cols, num_rows))
-    return img_translation
+        # Threshold image
+        _,im = cv2.threshold(im, 128, 255, cv2.THRESH_BINARY)
 
-def rotation(img, angle):
-    # variable (angle) degree rotation
-    rows, cols = img.shape[:2]
-    M = cv2.getRotationMatrix2D((cols/2, rows/2), angle, 1)
-    dst = cv2.warpAffine(img, M, (cols, rows))
-    return dst
+        # Calculate Moments
+        moment = cv2.moments(im)
 
-def resize(img):
-    # 50 % resize
-    resized = cv2.resize(img, (0, 0), fx = 0.5, fy = 0.5)
-    return resized
+        # Calculate Hu Moments
+        huMoments = cv2.HuMoments(moment)
 
-# Read image
-img = cv2.imread(filename)
-#img = resize(img)
-img = rotation(img,45)
+        # Print Hu Moments
+        print("{}: ".format(filename),end='')
 
-#img = translation(img)
-# img = rotation(img)
+        for i in range(0,7):
+            if showLogTransformedHuMoments:
+                # Log transform Hu Moments to make
+                # squash the range
+                print("{:.5f}".format(-1*copysign(1.0,\
+                        huMoments[i])*log10(abs(huMoments[i]))),\
+                        end=' ')
+            else:
+                # Hu Moments without log transform
+                print("{:.5f}".format(huMoments[i]),end=' ')
+        print()
 
-# Convert to gray scale
-gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-
-#ret, thresholded = cv2.threshold(gray, 10, 255, cv2.THRESH_BINARY)
-
-cv2.imshow("gray", gray)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
-# Calculate Hu Moments
-hu_moments = cv2.HuMoments(cv2.moments(gray)).flatten()
-
-# log scale hu moments
-log_scaled_hu_moments = (-np.sign(hu_moments) * np.log10(np.abs(hu_moments)))
-
-print("Hu Moments: ", hu_moments)
-print("Logarithmic Scaled Hu Moments: ", log_scaled_hu_moments)
+if __name__ == "__main__":
+    main()
