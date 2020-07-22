@@ -11,3 +11,7 @@ These values are invarient to:
 
 ## Usage:-  
   `python3 Hu.py`
+
+## References:-    
+1. https://www.learnopencv.com/tag/hu-moments/    
+2. https://www.pyimagesearch.com/2014/10/27/opencv-shape-descriptor-hu-moments-example/    
